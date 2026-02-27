@@ -1451,20 +1451,20 @@
       <h3 class="modal-title">도입 문의하기</h3>
       <p class="modal-desc">상담을 위해 필요한 정보를 입력해 주세요.<br>담당자가 확인 후 빠른 시일 내에 연락드리겠습니다.</p>
 
-      <form id="inquiryForm" onsubmit="handleInquirySubmit(event)">
+      <form id="inquiryForm" action="https://formspree.io/f/xvzbyoee" method="POST" onsubmit="handleInquirySubmit(event)">
         <div class="form-group">
           <label class="form-label" for="company">회사명</label>
-          <input type="text" id="company" class="form-input" placeholder="정확한 회사명을 입력해주세요" required>
+          <input type="text" id="company" name="company" class="form-input" placeholder="정확한 회사명을 입력해주세요" required>
         </div>
         <div class="form-group">
           <label class="form-label" for="name">담당자명</label>
-          <input type="text" id="name" class="form-input" placeholder="성함을 입력해주세요" required>
+          <input type="text" id="name" name="name" class="form-input" placeholder="성함을 입력해주세요" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="phone">이메일 주소</label>
-          <input type="email" class="form-input" id="email" required placeholder="example@company.com" />
+          <label class="form-label" for="email">이메일 주소</label>
+          <input type="email" class="form-input" id="email" name="email" required placeholder="example@company.com" />
         </div>
-        <button type="submit" class="modal-submit">신청하기</button>
+        <button type="submit" class="modal-submit" id="dc-submit-btn">신청하기</button>
       </form>
     </div>
   </div>
@@ -1484,15 +1484,28 @@
       document.body.style.overflow = '';
     }
 
-    function handleInquirySubmit(event) {
+    async function handleInquirySubmit(event) {
       event.preventDefault();
-      const company = document.getElementById('company').value;
-      const name = document.getElementById('name').value;
-      const phone = document.getElementById('phone').value;
-
-      alert(`${name}님, 문의가 접수되었습니다.\n회사명: ${company}\n이메일: ${email}\n\n조만간 연락드리겠습니다.`);
-      closeModal();
-      event.target.reset();
+      const btn = document.getElementById('dc-submit-btn');
+      btn.textContent = '전송 중...'; btn.disabled = true;
+      try {
+        const res = await fetch('https://formspree.io/f/xvzbyoee', {
+          method: 'POST',
+          body: new FormData(event.target),
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          btn.textContent = '전송 완료!'; btn.style.background = '#2a9d5c';
+          setTimeout(() => {
+            closeModal();
+            btn.textContent = '신청하기'; btn.style.background = ''; btn.disabled = false;
+          }, 1800);
+        } else {
+          btn.textContent = '오류가 발생했습니다. 다시 시도해주세요.'; btn.disabled = false;
+        }
+      } catch (err) {
+        btn.textContent = '오류가 발생했습니다. 다시 시도해주세요.'; btn.disabled = false;
+      }
     }
 
     // Close modal on overlay click
